@@ -1,0 +1,16 @@
+@import "./scss/index.scss";
+main {
+    padding: 40px 40px 40px 40px;
+    background-color: $background-color;
+}
+
+header {
+    text-align: end;
+    position: relative !important;
+}
+
+.ant-card {
+    background: $header-color;
+    border-color: $header-color;
+    border-radius: 7px;
+}

@@ -1,0 +1,26 @@
+@import "../scss/index.scss";
+
+/*** MAIN MENU ***/
+.main-menu-divider-middle {
+    background-color: $m-divider-background-color;
+    margin-bottom: 30px !important;
+    margin-top: 30px !important;
+}
+
+.main-menu-divider-all {
+    margin-bottom: 30px !important;
+    background-color: $m-divider-background-color;
+}
+
+.ant-layout-sider {
+    padding: 0 !important;
+}
+
+.logo {
+    padding: 15px;
+}
+
+.ant-menu.ant-menu-dark .ant-menu-item-selected,
+.ant-menu-submenu-popup.ant-menu-dark .ant-menu-item-selected {
+    background-color: #4a4a4a !important;
+}
