@@ -1,0 +1,40 @@
+@import "../scss/index.scss";
+
+.ant-btn-primary {
+    background-color: $buy-color;
+    background: $buy-color  !important;
+    border: none;
+    opacity: 1;
+
+    &:hover {
+        background-color: $buy-color;
+        opacity: 0.75;
+    }
+}
+
+.ant-card-cover img {
+    object-fit: cover;
+    width: 100%;
+    height: 250px;
+    opacity: 1;
+}
+
+.ant-card-cover {
+    background: black;
+}
+
+.popover {
+    max-width: 300px !important;
+}
+
+.ant-carousel {
+    color: rgba(0, 0, 0, 0.85) !important;
+}
+
+.ant-carousel .slick-dots li.slick-active button {
+    background: #fff !important;
+}
+
+.ant-carousel .slick-dots li button {
+    background: #fff !important;
+}

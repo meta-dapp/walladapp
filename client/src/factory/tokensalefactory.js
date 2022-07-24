@@ -1,3 +1,5 @@
+import { _weiToBNB } from "../util/units"
+
 export default class TokenSaleFactory {
     constructor(contract) {
         this.contract = contract
@@ -28,7 +30,11 @@ export default class TokenSaleFactory {
     }
 
     async _tokenPrice() {
-        return /*Se convertirá a bnb*/(await this.contract.__tokenPrice()).toNumber()
+        return _weiToBNB((await this.contract.__tokenPrice()).toNumber())
+    }
+
+    async _priceChangePercent() {
+        return 0
     }
 
     async _currentPhase() {

@@ -49,9 +49,9 @@ export default class MetaDappFactory {
         return (await this.contract.totalUsers()).toNumber()
     }
 
-    /*async _totalProducts() {
-        return (await this.contract.totalProducts()).toNumber()
-    }*/
+    async _totalProducts() {
+        return (await this._getProducts()).length
+    }
 
     async _buyProduct(product_id, from) {
         return await this.contract.buyProduct(product_id, { from })

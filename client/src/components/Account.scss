@@ -1,0 +1,21 @@
+@import "../scss/index.scss";
+
+.ant-card {
+    margin: 5px;
+}
+
+.user-account-header {
+    &:hover {
+        cursor: pointer !important;
+    }
+
+    margin-left: 5px;
+
+    &__item-contact {
+        color: $up-percent-color;
+
+        &:hover {
+            cursor: pointer !important;
+        }
+    }
+}

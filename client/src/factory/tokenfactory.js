@@ -7,7 +7,11 @@ export default class TokenFactory {
         return await this.contract.approve(spender, amount, { from })
     }
 
-    async _allowence(owner, spender) {
-        return await this.contract.allowence(owner, spender, { from: owner })
+    async _allowance(owner, spender) {
+        return await this.contract.allowance(owner, spender, { from: owner })
+    }
+
+    async _symbol() {
+        return await this.contract.symbol()
     }
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, withRouter } from 'react-router-dom'
 import 'antd/dist/antd.dark.css'
 import { Layout, Menu } from 'antd'
 import Icon from '@ant-design/icons'
@@ -79,7 +79,7 @@ function getSelectedItem() {
         '/pc': '4',
         '/my-account': '5',
         '/token-sale': '6'
-    }[useLocation().pathname]
+    }[window.location.pathname.replace('/', '').trim().toLowerCase()] || '1'
 }
 
-export default NavItems
+export default withRouter(NavItems)

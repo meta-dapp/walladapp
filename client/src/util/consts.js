@@ -41,7 +41,7 @@ export const InitialState = {
         product_price: 0,
         product_comission: 1,
         product_confirmed: false,
-        allowence: 0,
+        allowance: 0,
         token_symbol: ''
     },
     NextGameList: {
@@ -51,7 +51,8 @@ export const InitialState = {
         data: [],
         itemToBuy: {},
         allowence: 0,
-        itemDetailsContact: undefined
+        itemDetailsContact: undefined,
+        token_symbol: undefined
     },
     TokenSale: {
         account: undefined,
