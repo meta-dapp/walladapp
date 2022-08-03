@@ -64,8 +64,6 @@ class TheHeader extends Component {
         }, () => {
             this.setState({
                 displayAccount: this.displayedAccount()
-            }, () => {
-                this.props.history.push('/playstation')
             })
         })
     }

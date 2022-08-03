@@ -79,7 +79,7 @@ function getSelectedItem() {
         '/pc': '4',
         '/my-account': '5',
         '/token-sale': '6'
-    }[window.location.pathname.replace('/', '').trim().toLowerCase()] || '1'
+    }[window.location.pathname.replace('/', '').trim().toLowerCase()]
 }
 
 export default withRouter(NavItems)

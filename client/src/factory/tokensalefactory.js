@@ -1,4 +1,4 @@
-import { _weiToBNB } from "../util/units"
+import { _bnbToWei, _weiToBNB } from "../util/units"
 
 export default class TokenSaleFactory {
     constructor(contract) {
@@ -22,7 +22,7 @@ export default class TokenSaleFactory {
     }
 
     async _buy(from, bnbAmount, tokens) {
-        return await this.contract.buy(tokens, { from, value: /*Se convertirá a wei*/bnbAmount })
+        return await this.contract.buy(tokens, { from, value: _bnbToWei(bnbAmount) })
     }
 
     async _tokens(from) {

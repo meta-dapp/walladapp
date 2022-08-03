@@ -50,7 +50,7 @@ export const InitialState = {
         isModalVisible: false,
         data: [],
         itemToBuy: {},
-        allowence: 0,
+        allowance: 0,
         itemDetailsContact: undefined,
         token_symbol: undefined
     },
@@ -61,6 +61,7 @@ export const InitialState = {
         percentPhase: 0,
         isModalVisible: false,
         input_token: 0,
-        input_bnb: 0
+        input_bnb: 0,
+        token_symbol: undefined
     }
 }

@@ -10,5 +10,5 @@ export function _saveImages(product_name, images) {
 }
 
 export function _getImages(product_name) {
-    return JSON.parse(localStorage.getItem(_nameToSlug(product_name)) || [])
+    return JSON.parse(localStorage.getItem(_nameToSlug(product_name)) || '[]')
 }

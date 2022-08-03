@@ -11,9 +11,9 @@ import TokenFactory from '../factory/tokenfactory'
 import Login from './Login'
 
 import './NextGameList.scss'
-import { Carousel, Row, Card, Popover, Modal, Tag } from 'antd'
+import { Carousel, Row, Card, Popover, Modal, Tag, Button, message } from 'antd'
 import { MailOutlined, CopyOutlined } from '@ant-design/icons'
-import { _weiToBNB } from '../util/units'
+import { _bnbToWei, _toBigNumber, _weiToBNB } from '../util/units'
 
 
 class NextGamesList extends Component {
@@ -95,7 +95,7 @@ class NextGamesList extends Component {
     itemDetailsVisibility = async (visible, account) => {
         if (visible) {
             this.setState({
-                itemDetailsContact: (await this.MetaDappFactory._getUser(account)).contact
+                itemDetailsContact: (await this._MetaDappFactory._getUser(account)).contact
             })
         } else {
             this.setState({
@@ -141,10 +141,62 @@ class NextGamesList extends Component {
 
     async selectItem(item) {
         this.setState({
-            allowance: (await this._MetaDappFactory._TokenFactory._allowance(this.state.account, this._MetaDappFactory._address())),
+            allowance: (await this._TokenFactory._allowance(this.state.account, this._MetaDappFactory._address())),
             itemToBuy: item,
             isModalVisible: true
         })
+    }
+
+    async approve() {
+        const hideLoad = message.loading(`Aprobando ${_weiToBNB(this.state.itemToBuy.price)} ${this.state.token_symbol}...`, 0)
+        try {
+            await this._TokenFactory._approve(
+                this._MetaDappFactory._address(),
+                _toBigNumber(this.state.itemToBuy.price), this.state.account
+            )
+
+            this.setState({
+                allowance: (await this._TokenFactory._allowance(this.state.account, this._MetaDappFactory._address()))
+            }, () => {
+                hideLoad()
+                message.success({ content: `${_weiToBNB(this.state.itemToBuy.price)} ${this.state.token_symbol} aprobados correctamente!`, key: this.state.account, duration: 2 })
+            })
+        } catch (err) {
+            hideLoad()
+            message.error({ content: `Ha ocurrido un error`, key: this.state.account, duration: 2 })
+        }
+    }
+
+    async buyItem() {
+        const hideLoad = message.loading(`Comprando ${this.state.itemToBuy.name}...`, 0)
+
+        try {
+            await this._MetaDappFactory._buyProduct(this.state.itemToBuy.id, this.state.account)
+            this.setState({
+                isModalVisible: false,
+                data: (await this._MetaDappFactory._getProducts())
+            }, () => {
+                hideLoad()
+                message.success({ content: `${this.state.itemToBuy.name} comprado correctamente!`, key: this.state.account, duration: 2 })
+                this.load()
+            })
+        } catch (err) {
+            hideLoad()
+            message.error({ content: `Ha ocurrido un error`, key: this.state.account, duration: 2 })
+        }
+    }
+
+    getApproveButton() {
+        return (this.state.itemToBuy.price > this.state.allowance ?
+            <Button key="approve" shape="round" type="primary" onClick={() => { this.approve() }}>Aprobar</Button> :
+            <Button disabled key="approve" shape="round" type="primary">Aprobar</Button>)
+    }
+
+    getPurchaseButton() {
+        return (this.state.itemToBuy.price <= this.state.allowance ?
+            <Button key="purchase" shape="round" type="primary" onClick={() => { this.buyItem() }}>Comprar</Button> :
+            <Button disabled key="purchase" shape="round" type="primary">Comprar</Button>
+        )
     }
 
     render() {
@@ -174,7 +226,7 @@ class NextGamesList extends Component {
                         })
                     }
                 </Row>
-                {/*<Modal
+                <Modal
                     footer={[
                         this.getApproveButton(),
                         this.getPurchaseButton()
@@ -192,7 +244,7 @@ class NextGamesList extends Component {
                             {this.state.itemToBuy.desc}
                         </span>
                     </Row>
-                </Modal>*/}
+                </Modal>
             </>
         else return <Login />
     }
