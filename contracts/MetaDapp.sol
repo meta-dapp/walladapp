@@ -1,18 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "./Address.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract MetaDapp {
+contract MetaDapp is Ownable {
 
-    address public owner;
+    using Address for address;
+    using SafeMath for uint;
+    using SafeMath for uint256;
+
     uint private secureAddPercent = 5;
     address private noOne = address(0);
     IERC20 private token;
 
     struct User {
-        string name;
-        string contact;
+        string dataHash;
         bool updated;
         uint total_products;
         uint[] products;
@@ -20,7 +25,7 @@ contract MetaDapp {
 
     struct Product {
         string name;
-        string desc;
+        string dataHash;
         string section;
         uint price;
         address owner;
@@ -36,16 +41,15 @@ contract MetaDapp {
     event ProductAdded(address indexed owner, string name, uint price);
 
     constructor(address _token){
-        owner = msg.sender;
         token = IERC20(_token);
         _totalUsers = 0;
     }
 
-    function setSecureAddPercent(uint percent) public isOwner {
+    function setSecureAddPercent(uint percent) external onlyOwner {
         secureAddPercent = percent;
     }
 
-    function getSecureAddPercent() private isOwner view returns(uint){
+    function getSecureAddPercent() private onlyOwner view returns(uint){
         return secureAddPercent;
     }
 
@@ -58,13 +62,13 @@ contract MetaDapp {
     }
 
     function addProduct(string memory name, 
-                        string memory desc, 
-                        string memory section, uint price) public {
+                        string memory dataHash, 
+                        string memory section, uint price) external {
 
-        transferTokens(address(this), __amount(__percentValue(price)), msg.sender);
+        transferTokens(address(this), __amount(__percentValue(price)), _msgSender());
 
-        products.push(Product(name, desc, section, __amount(price), msg.sender, noOne));
-        emit ProductAdded(msg.sender, name, __amount(price));
+        products.push(Product(name, dataHash, section, __amount(price), _msgSender(), noOne));
+        emit ProductAdded(_msgSender(), name, __amount(price));
     }
 
     function transferTokens(address _owner, uint _price, address _buyer) private {
@@ -75,19 +79,18 @@ contract MetaDapp {
         require(sent, 'Not sent');
     }
 
-    function updateProductPrice(uint product_id, uint price) public {
-        require(msg.sender != noOne);
+    function updateProductPrice(uint product_id, uint price) external {
+        require(_msgSender() != noOne);
         Product storage product = products[product_id];
-        require(msg.sender == product.owner);
+        require(_msgSender() == product.owner);
         require(product.reserved_by == noOne);
         product.price = __amount(price);
     }
 
-    function updateUserContact(string memory contact, string memory name) public {
-        require(msg.sender != noOne);
-        User storage user = users[msg.sender];
-        user.contact = contact;
-        user.name = name;
+    function updateUserContact(string memory dataHash) external {
+        require(_msgSender() != noOne);
+        User storage user = users[_msgSender()];
+        user.dataHash = dataHash;
 
         if(!user.updated)
             _totalUsers++;
@@ -95,45 +98,40 @@ contract MetaDapp {
         user.updated = true;
     }
 
-    function buyProduct(uint product_id) public {
+    function buyProduct(uint product_id) external {
         Product storage product = products[product_id];
-        require(msg.sender != product.owner, 'You cannot buy your own products');
-        transferTokens(product.owner, product.price, msg.sender);
-        User storage buyer = users[msg.sender];
+        require(_msgSender() != product.owner, 'You cannot buy your own products');
+        transferTokens(product.owner, product.price, _msgSender());
+        User storage buyer = users[_msgSender()];
         buyer.total_products += 1;
         buyer.products.push(product_id);
-        product.reserved_by = msg.sender;
+        product.reserved_by = _msgSender();
 
-        emit ProductPurchased(msg.sender, product.owner, product.price);
+        emit ProductPurchased(_msgSender(), product.owner, product.price);
     }
 
-    function totalUsers() public view returns (uint){
+    function totalUsers() external view returns (uint){
         return _totalUsers;
     }
 
-    function getProducts() public view returns(Product[] memory){
+    function getProducts() external view returns(Product[] memory){
       return products;
     }
 
-    function getProduct(uint product_id) public view returns(Product memory){
+    function getProduct(uint product_id) external view returns(Product memory){
       return products[product_id];
     }
 
-    function getUser(address userAddress) public view returns(User memory){
+    function getUser(address userAddress) external view returns(User memory){
       return users[userAddress];
     }
 
-    function withdrawBNB(address payable account) external isOwner {
+    function withdrawBNB(address payable account) external onlyOwner {
         (bool success, ) = account.call{value: address(this).balance}("");
         require(success);
     }
 
-    function withdraw(address to, uint256 amount) external isOwner{
+    function withdraw(address to, uint256 amount) external onlyOwner{
         require(token.transfer(to, amount));
-    }
-
-    modifier isOwner(){
-        require(msg.sender == owner);
-        _;
     }
 }

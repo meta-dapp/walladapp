@@ -7,4 +7,8 @@ contract MetaDappToken is ERC20 {
     constructor() ERC20("MetaDapp Token", "MDA"){
         _mint(msg.sender, 1000000 * 10**18);
     }
+
+    function burn(uint256 amount) public {
+        _burn(_msgSender(), amount);
+    }
 }

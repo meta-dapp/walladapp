@@ -37,12 +37,13 @@ import TokenContract from '../contracts/MetaDappToken'
 import TokenFactory from '../factory/tokenfactory'
 
 import { _sections, _base64, _mapImagesProduct, isConnected, bnbPrice } from '../util/metadapp'
-import { _saveImages } from '../util/imagesaver'
+import { saveImages, _saveImages } from '../util/imagesaver'
 
 import Login from './Login'
 
 import { InitialState } from '../util/consts'
 import { _bnbToWei, _toBigNumber } from '../util/units'
+import ipfs from '../storage/ipfs'
 
 export default class Account extends Component {
     constructor(props) {
@@ -144,7 +145,13 @@ export default class Account extends Component {
                 _contact = this.state.data.contact || ''
             else _name = this.state.data.name || ''
 
-            await this._MetaDappFactory._updateUserContact(_contact, _name, this.state.account)
+            const ipfsRes = await ipfs.add(JSON.stringify({
+                contact: _contact,
+                name: _name
+            }))
+
+            if (ipfsRes && 'path' in ipfsRes)
+                await this._MetaDappFactory._updateUserContact(ipfsRes.path, this.state.account)
 
             this.setState({
                 isModalVisible: false,
@@ -215,23 +222,38 @@ export default class Account extends Component {
     async __callAddProduct() {
         if (this.productValid()) {
             const hideLoad = message.loading(`Agregando ${this.state.product_name}...`, 0)
-            await this._MetaDappFactory._addProduct(
-                this.state.product_name,
-                this.state.product_desc,
-                this.state.product_section,
-                this.state.product_price,
-                this.state.account
-            )
 
-            _saveImages(this.state.product_name, _mapImagesProduct(this.state.fileList))
+            const images = await saveImages(this.state.fileList)
 
-            this.setState({
-                isProductModalVisible: false
-            }, () => {
-                hideLoad()
-                message.success({ content: `Producto agregado correctamente!`, key: this.state.account, duration: 2 })
-                this.load()
-            })
+            if (images.length === this.state.fileList) {
+                const ipfsRes = await ipfs.add(JSON.stringify({
+                    desc: this.state.product_desc,
+                    images
+                }))
+
+                if (ipfsRes && 'path' in ipfsRes) {
+                    await this._MetaDappFactory._addProduct(
+                        this.state.product_name,
+                        ipfsRes.path,
+                        this.state.product_section,
+                        this.state.product_price,
+                        this.state.account
+                    )
+
+                    this.setState({
+                        isProductModalVisible: false
+                    }, () => {
+                        hideLoad()
+                        message.success({ content: `Producto agregado correctamente!`, key: this.state.account, duration: 2 })
+                        this.load()
+                    })
+                } else {
+                    message.error({ content: `No se ha podido guardar los datos`, key: this.state.account, duration: 2 })
+                }
+
+            } else {
+                message.error({ content: `No se ha podido subir las fotos`, key: this.state.account, duration: 2 })
+            }
         } else {
             message.error({ content: `Debes completar todos los campos`, key: this.state.account, duration: 2 })
         }

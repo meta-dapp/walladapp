@@ -52,7 +52,8 @@ export const InitialState = {
         itemToBuy: {},
         allowance: 0,
         itemDetailsContact: undefined,
-        token_symbol: undefined
+        token_symbol: undefined,
+        imagesLoaded: false
     },
     TokenSale: {
         account: undefined,

@@ -1,12 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "./Address.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 
-contract MetaDappTokenSale {
+contract MetaDappTokenSale is Ownable {
 
-    address public owner;
+    using Address for address;
+    using SafeMath for uint;
+    using SafeMath for uint256;
+
     uint private buyPrice;
     uint private sold;
     uint private toSold;
@@ -25,7 +31,6 @@ contract MetaDappTokenSale {
     event Sell(address _buyer, uint _amount);
 
     constructor(address _token) {
-        owner = msg.sender;
         token = IERC20(_token);
         buyPrice = 0.000005 * 10**18;
         currentPhaseIndex = 0;
@@ -37,11 +42,11 @@ contract MetaDappTokenSale {
         }
     }
 
-    function buy(uint tokens) public payable {
+    function buy(uint tokens) external payable {
         require(msg.value / phase(currentPhaseIndex).price == tokens, 'Error value not match');
         require(phase(currentPhaseIndex).total <= __amount(tokens), 'Error low balance');
         require(token.balanceOf(address(this)) >= __amount(tokens), 'Sold out');
-        require(token.transfer(msg.sender, __amount(tokens)));
+        require(token.transfer(_msgSender(), __amount(tokens)));
 
         sold += tokens;
         phases[currentPhaseIndex].total -= tokens;
@@ -50,44 +55,44 @@ contract MetaDappTokenSale {
 
         buyPrice = phase(currentPhaseIndex).price;
 
-        emit Sell(msg.sender, tokens);
+        emit Sell(_msgSender(), tokens);
     }
 
     function __unAmount(uint256 _amount, uint decimals) private pure returns(uint){
         return _amount / (10**decimals);
     }
 
-    function __tokens() public view returns(uint){
-        return __unAmount(token.balanceOf(msg.sender), 18);
+    function __tokens() external view returns(uint){
+        return __unAmount(token.balanceOf(_msgSender()), 18);
     }
 
-    function __tokenPrice() public view returns(uint){
+    function __tokenPrice() external view returns(uint){
         return buyPrice;
     }
 
-    function endSale() public isOwner {
-        require(token.transfer(owner, token.balanceOf(address(this))));
-        payable(owner).transfer(address(this).balance);
+    function endSale() external onlyOwner {
+        require(token.transfer(owner(), token.balanceOf(address(this))));
+        payable(owner()).transfer(address(this).balance);
     }
 
-    function tokensSold() public view returns(uint){
+    function tokensSold() external view returns(uint){
         return sold;
     }
 
-    function totalTokens() public view returns(uint){
+    function totalTokens() external view returns(uint){
         return __unAmount(token.totalSupply(), 18);
     }
 
-    function __phases() public view returns(Phase [] memory) {
+    function __phases() external view returns(Phase [] memory) {
         return phases;
     }
 
-    function currentPhase() public view returns(Phase memory){
+    function currentPhase() external view returns(Phase memory){
         return phase(currentPhaseIndex);
     }
 
-    function __isOwner() public view returns(bool){
-        return msg.sender == owner;
+    function isOwner() external view returns(bool){
+        return _msgSender() == owner();
     }
 
     function phase(uint phase_id) public view returns(Phase memory){
@@ -96,12 +101,6 @@ contract MetaDappTokenSale {
 
     function __amount(uint _amount) private pure returns(uint){
         return _amount * (10 ** 18);
-    }
-
-
-     modifier isOwner(){
-        require(msg.sender == owner);
-        _;
     }
 }
 

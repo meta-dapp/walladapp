@@ -1,4 +1,4 @@
-import { _getImages } from "../util/imagesaver"
+import { hashToURL, _getImages } from "../util/imagesaver"
 
 export default class MetaDappFactory {
     constructor(contract) {
@@ -12,9 +12,20 @@ export default class MetaDappFactory {
     async _getUser(account) {
         let user = await this.contract.getUser(account)
 
+        var userData = {
+            name: "",
+            contact: ""
+        }
+
+        if (user.dataHash !== '') {
+            const userInfo = await axios.get(hashToURL(user.dataHash))
+            if (userInfo.status === 200 && 'data' in userInfo)
+                userData = userInfo
+        }
+
         return {
-            name: user.name,
-            contact: user.contact,
+            name: userData.name,
+            contact: userData.contact,
             updated: user.updated,
             total_products: user.total_products,
             products: user.products
@@ -31,12 +42,12 @@ export default class MetaDappFactory {
         return {
             id: product_id,
             name: product.name,
-            desc: product.desc,
+            dataHash: product.dataHash,
             section: product.section,
             price: product.price,
             owner: product.owner,
             reserved_by: product.reserved_by,
-            images: _getImages(product.name)
+            images: []
         }
     }
 
@@ -57,16 +68,16 @@ export default class MetaDappFactory {
         return await this.contract.buyProduct(product_id, { from })
     }
 
-    async _updateUserContact(contact, name, from) {
-        return this.contract.updateUserContact(contact, name, { from })
+    async _updateUserContact(dataHash, from) {
+        return this.contract.updateUserContact(dataHash, { from })
     }
 
     async _updateProductPrice(product_id, price, from) {
         return await this.contract.updateProductPrice(product_id, price, { from })
     }
 
-    async _addProduct(name, desc, section, price, from) {
-        return await this.contract.addProduct(name, desc, section, price, { from })
+    async _addProduct(name, dataHash, section, price, from) {
+        return await this.contract.addProduct(name, dataHash, section, price, { from })
     }
 
     async _percentValue(amount, from) {
@@ -82,12 +93,12 @@ export default class MetaDappFactory {
             return {
                 id: product_id,
                 name: product.name,
-                desc: product.desc,
+                dataHash: product.dataHash,
                 section: product.section,
                 price: product.price,
                 owner: product.owner,
                 reserved_by: product.reserved_by,
-                images: _getImages(product.name)
+                images: []
             }
         })
     }
