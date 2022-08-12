@@ -222,10 +222,9 @@ export default class Account extends Component {
     async __callAddProduct() {
         if (this.productValid()) {
             const hideLoad = message.loading(`Agregando ${this.state.product_name}...`, 0)
-
             const images = await saveImages(this.state.fileList)
 
-            if (images.length === this.state.fileList) {
+            if (images.length === this.state.fileList.length) {
                 const ipfsRes = await ipfs.add(JSON.stringify({
                     desc: this.state.product_desc,
                     images

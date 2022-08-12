@@ -9,8 +9,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@openzeppelin/contracts": "^4.6.0",
-    "@truffle/hdwallet-provider": "^2.0.8"
+    "@openzeppelin/contracts": "^4.7.3",
+    "@truffle/hdwallet-provider": "^2.0.8",
+    "ipfs-http-client": "^56.0.0"
   },
   "devDependencies": {
     "truffle-plugin-verify": "^0.5.26"

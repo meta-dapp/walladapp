@@ -1,4 +1,5 @@
 import { hashToURL, _getImages } from "../util/imagesaver"
+import axios from 'axios'
 
 export default class MetaDappFactory {
     constructor(contract) {
@@ -20,7 +21,7 @@ export default class MetaDappFactory {
         if (user.dataHash !== '') {
             const userInfo = await axios.get(hashToURL(user.dataHash))
             if (userInfo.status === 200 && 'data' in userInfo)
-                userData = userInfo
+                userData = userInfo.data
         }
 
         return {

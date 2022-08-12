@@ -14,6 +14,8 @@ import './NextGameList.scss'
 import { Carousel, Row, Card, Popover, Modal, Tag, Button, message } from 'antd'
 import { MailOutlined, CopyOutlined } from '@ant-design/icons'
 import { _bnbToWei, _toBigNumber, _weiToBNB } from '../util/units'
+import axios from 'axios'
+import { hashToURL } from '../util/imagesaver'
 
 
 class NextGamesList extends Component {
@@ -24,8 +26,24 @@ class NextGamesList extends Component {
 
     checkConnection() {
         if (isConnected()) {
+            if (this.historyListener)
+                this.historyListener = undefined
+
+            this.historyListener = this.props.history.listen(location => {
+                this.setState({
+                    section: this.getSection(location),
+                    imagesLoaded: false
+                }, async () => {
+                    this.load()
+                })
+            })
+
             this.setState({
-                section: this.getSection()
+                section: this.getSection(this.props.location),
+            }, () => {
+                if (this.state.section)
+                    this.load()
+                else this.props.history.push('/playstation')
             })
         } else this.props.history.push('/login')
     }
@@ -40,17 +58,6 @@ class NextGamesList extends Component {
         return section === '' ? 'playstation' : section
     }
 
-    async componentDidUpdate() {
-        if (isConnected()) {
-            if (this.getSection() != this.state.section)
-                this.setState({
-                    section: this.getSection()
-                }, () => {
-                    this.load()
-                })
-        } else this.props.history.push('/login')
-    }
-
     disconnect() {
         this._web3Instance.disconnect()
         this.resetState()
@@ -58,6 +65,30 @@ class NextGamesList extends Component {
 
     resetState() {
         this.setState(InitialState.NextGameList)
+    }
+
+    productIndexByHash(hash) {
+        return this.state.data.map(item => item.dataHash).indexOf(hash)
+    }
+
+    loadImages(item) {
+        axios.get(hashToURL(item.dataHash))
+            .then(function (res) {
+                if (res.data) {
+                    item['desc'] = res.data.desc
+                    res.data.images.forEach(image => {
+                        item.images.push(hashToURL(image))
+                    })
+                    const itemIndex = this.productIndexByHash(item.dataHash)
+                    if (itemIndex > -1) {
+                        this.setState(prevState => {
+                            const updatedData = [...prevState.data]
+                            updatedData[itemIndex] = item
+                            return { data: updatedData }
+                        })
+                    }
+                }
+            }.bind(this))
     }
 
     async load() {
@@ -71,9 +102,19 @@ class NextGamesList extends Component {
             this._TokenFactory = new TokenFactory(Token)
 
             this.setState({
-                section: this.getSection(),
                 data: (await this._MetaDappFactory._getProducts()),
                 token_symbol: (await this._TokenFactory._symbol())
+            })
+
+            if (this.state.data.length > 0 && !this.state.imagesLoaded) {
+                this.state.data.forEach(async (item) => {
+                    if (item.section === this.state.section)
+                        this.loadImages(item)
+                })
+            }
+
+            this.setState({
+                imagesLoaded: true
             })
         })
     }

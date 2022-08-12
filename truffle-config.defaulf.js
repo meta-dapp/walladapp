@@ -26,6 +26,18 @@ module.exports = {
             confirmations: 4,
             timeoutBlocks: 10000,
             skipDryRun: true
+        },
+        bsc_mainnet: {
+            provider: () => new HDWalletProvider(
+                'TUS FRASES SECRETAS DE TU WALLET',
+                `https://bscrpc.com/`, 0),
+            from: "LA CUENTA DESDE DONDE QUIERES PUBLICAR LOS CONTRATOS",
+            gas: "4500000",
+            gasPrice: "10000000000",
+            network_id: 56,
+            confirmations: 4,
+            timeoutBlocks: 10000,
+            skipDryRun: true
         }
     },
     compilers: {
